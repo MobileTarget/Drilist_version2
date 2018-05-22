@@ -9,6 +9,7 @@
           $scope.user = {
                country_code: "1"   
           };
+          $scope.listData = {};
           
           $scope.config = {
                page_id: $window.localStorage.access_token ? 2 : 1,
@@ -48,7 +49,6 @@
                          console.log("error from the API");
 
                     }
-                    console.log("response from list API==",$window.localStorage);
                     if(res.data.success==false){
                          utilityService.showAlert("No child data available for this","Message");
                          utilityService.setLoading(false);
@@ -56,11 +56,15 @@
                     }else{
                          $scope.listData = res.data.data; 
                          $scope.listData.currentPageId = res.data.data.header.from_page_id;
+                         $scope.listData.new={recordType:''};
                     console.log("response from list API 2==",res.data);
-                    myService.apiResult.task.template.header.html=$scope.listData.header.html;
-                    myService.apiResult.task.template.footer.html=$scope.listData.footer.html;
-                    myService.apiResult.task.template.detail.html=$scope.listData.details.html.html;
-                    // myService.apiResult.task.template.detail.html='<ion-content padding="true"><div class="wbox" style="padding:30px;"><h1 style="text-align:center;">{{listData.details.html.from_page_name}}</h1><div style="height: 40px;" class="spacer"></div> <ion-list id="homelist"><ion-item ng-repeat="x in listData.details.content" ng-click="showChild(x.to_page_id, listData.header.from_page_id)" can-swipe="true">{{x.content.key==="v1"?"":x.content.key+": "}} {{x.content.value}} <ion-option-button class="ion-minus-circled button-negative" ng-click="deleteRecord(x.id)"></ion-option-button> <ion-option-button class="button-info" ng-click="editRecord(x, $index)"> Edit </ion-option-button> </ion-item></ion-list> </div></ion-content>';
+                    // myService.apiResult.task.template.header.html=$scope.listData.header.html;
+                    // myService.apiResult.task.template.footer.html=$scope.listData.footer.html;
+                    // myService.apiResult.task.template.detail.html=$scope.listData.details.html.html;
+
+                    myService.apiResult.task.template.header.html='<ion-header-bar class="bar-stable"><button class="button button-icon" ng-click="logout()"><i class="icon ion-log-out"></i>     </button>     <h1 class="title">{{title}}</h1>     <div class="buttons">          <button class="button button-icon" ng-click="editUser()">           <i class="icon ion-person"></i>          </button>     </div></ion-header-bar>';
+                    myService.apiResult.task.template.footer.html='<p><ion-footer-bar class="bar-stable"> <button class="button button-icon" ng-click="addRecordModel()"> <i class="icon ion-android-add-circle"></i> </button></ion-footer-bar></p>';
+                    myService.apiResult.task.template.detail.html='<ion-content padding="true"><div class="wbox" style="padding:30px;"><h1 style="text-align:center;">{{listData.details.html.from_page_name}}</h1><div style="height: 40px;" class="spacer"></div> <ion-list id="homelist"><ion-item ng-repeat="x in listData.details.content" ng-click="showChild(x.to_page_id, listData.header.from_page_id)" can-swipe="true">{{x.content.key==="v1"?"":x.content.key+": "}} {{x.content.value}} <ion-option-button class="ion-minus-circled button-negative" ng-click="deleteRecord(x.id)"></ion-option-button> <ion-option-button class="button-info" ng-click="editRecord(x, $index)"> Edit </ion-option-button> </ion-item></ion-list> </div></ion-content>';
                     
                     $scope.setPage();
                     utilityService.setLoading(false);
@@ -105,6 +109,7 @@
 
                $scope.$evalAsync(function () {
                     $scope.html = $sce.trustAsHtml($scope.header_html + $scope.detail_html + $scope.footer_html);
+                    // console.log("Full html", $scope.header_html + $scope.detail_html + $scope.footer_html);
                });
           };
 
@@ -239,15 +244,20 @@
           $scope.addRecordModel = function(){
                console.log("add record");
                $scope.recordType='abc';
-               myService.apiResult.task.template.detail.html = '<ion-content padding="true"><div class="wbox" style="padding:30px;"><h1 style="text-align:center;">Add Record</h1><div style="height: 40px;" class="spacer"></div> <label class="item item-input item-select">    <div class="input-label">        &nbsp;    </div>    <select ng-model="listData.new.recordType">        <option selected>Select</option>        <option value="text">Text</option>        <option value="number" >Number</option>    </select></label> <button class="button button-stable button-block" id="login-button" ng-click="selectType()">NEXT</button> </div></ion-content>';
+               myService.apiResult.task.template.detail.html = '<ion-content padding="true"><div class="wbox" style="padding:30px;"><h1 style="text-align:center;">Add Record</h1><div style="height: 40px;" class="spacer"></div> <label class="item item-input item-select">    <div class="input-label">        &nbsp;    </div>    <select ng-model="listData.new.recordType">        <option selected>Select</option>        <option value="text">Text</option>        <option value="number" >Number</option>    </select></label> <button class="button button-stable button-block" id="login-button" ng-click="selectType(listData.new.recordType)">NEXT</button> </div></ion-content>';
                $scope.setPage();
                utilityService.setLoading(false);
           }
 
           //show template to select whcih type of record user want to create
-          $scope.selectType = function(user){
-               console.log("recordType", $scope.listData); 
-               myService.apiResult.task.template.detail.html = '<ion-content padding="true"><div class="wbox" style="padding:30px;"><h1 style="text-align:center;">Add Record</h1><div style="height: 40px;" class="spacer"></div>    <div class = "list">   <label class = "item item-input"> Key :    <input type = "text" ng-model="listData.new.key" />   </label>   <label class = "item item-input">Value:      <input type = "text" ng-model="listData.new.value" ng-if="listData.new.recordType==\'text\'" />   <input type = "number" ng-model="listData.new.value" ng-if="listData.new.recordType==\'number\'" /> </label>   </div> <button class="button button-stable button-block" id="login-button" ng-click="createRecord()">Save</button> </div></ion-content>';
+          $scope.selectType = function(num){
+
+               if($scope.listData.new.recordType=='number'){
+                    myService.apiResult.task.template.detail.html = '<ion-content padding="true"><div class="wbox" style="padding:30px;"><h1 style="text-align:center;">Add Record</h1><div style="height: 40px;" class="spacer"></div>    <div class = "list">   <label class = "item item-input"> Key :    <input type = "text" ng-model="listData.new.key" />   </label>   <label class = "item item-input">Value:   <input type = "number" ng-model="listData.new.value" /> </label>   </div> <button class="button button-stable button-block" id="login-button" ng-click="createRecord()">Save</button> </div></ion-content>';
+               }else{
+                    myService.apiResult.task.template.detail.html = '<ion-content padding="true"><div class="wbox" style="padding:30px;"><h1 style="text-align:center;">Add Record</h1><div style="height: 40px;" class="spacer"></div>    <div class = "list">   <label class = "item item-input"> Key :    <input type = "text" ng-model="listData.new.key" />   </label>   <label class = "item item-input">Value:      <input type = "text" ng-model="listData.new.value" /> </label>   </div> <button class="button button-stable button-block" id="login-button" ng-click="createRecord()">Save</button> </div></ion-content>';
+               }
+               
                $scope.setPage();
                utilityService.setLoading(false);
           }
@@ -343,10 +353,12 @@
                     }else{
                          $scope.listData=res.data.data; 
                          $scope.listData.currentPageId = pageId;
-                         myService.apiResult.task.template.header.html=$scope.listData.header.html;
-                         myService.apiResult.task.template.detail.html=$scope.listData.details.html.html;
-                         // myService.apiResult.task.template.detail.html='<ion-content padding="true"><div class="wbox" style="padding:30px;"><h1 style="text-align:center;">{{listData.details.html.from_page_name}}</h1><div style="height: 40px;" class="spacer"></div> <ion-list id="homelist"><ion-item ng-repeat="x in listData.details.content" ng-click="showChild(x.to_page_id, listData.header.from_page_id)" can-swipe="true">{{x.content.key==="v1"?"":x.content.key+": "}} {{x.content.value}} <ion-option-button class="ion-minus-circled button-negative" ng-click="deleteRecord(x.id)"></ion-option-button> <ion-option-button class="button-info" ng-click="editRecord(x, $index)"> Edit </ion-option-button> </ion-item></ion-list> </div></ion-content>';
-                         // myService.apiResult.task.template.header.html=$scope.childHeaderHtml;
+                         // myService.apiResult.task.template.header.html=$scope.listData.header.html;
+                         // myService.apiResult.task.template.detail.html=$scope.listData.details.html.html;
+
+                         myService.apiResult.task.template.header.html='<ion-header-bar class="bar-stable"> <button class="button button-icon" ng-click="goPage(listData.header.from_page_id)"> <i class="icon ion-ios-arrow-back">Back</i> </button> <h1 class="title">{{title}}</h1> <div class="buttons"> <button class="button button-icon" ng-click="editUser()"> <i class="icon ion-person"></i> </button> <button class="button button-icon" ng-click="sortDetail()"> </button> </div></ion-header-bar>';
+                         myService.apiResult.task.template.detail.html='<ion-content padding="true"><div class="wbox" style="padding:30px;"><h1 style="text-align:center;">{{listData.details.html.from_page_name}}</h1><div style="height: 40px;" class="spacer"></div> <ion-list id="homelist"><ion-item ng-repeat="x in listData.details.content" ng-click="showChild(x.to_page_id, listData.header.from_page_id)" can-swipe="true">{{x.content.key==="v1"?"":x.content.key+": "}} {{x.content.value}} <ion-option-button class="ion-minus-circled button-negative" ng-click="deleteRecord(x.id)"></ion-option-button> <ion-option-button class="button-info" ng-click="editRecord(x, $index)"> Edit </ion-option-button> </ion-item></ion-list> </div></ion-content>';
+                         
                          $scope.setPage();
                          utilityService.setLoading(false);
                     }
@@ -391,17 +403,27 @@
                $scope.editValue=item;
                // $scope.editValueIndex=index;
 
-               if(item.edit_template){
-                    myService.apiResult.task.template.detail.html = item.edit_template.details;   
+               //Header template for edit screen
+               myService.apiResult.task.template.header.html = '<ion-header-bar class="bar-stable"> <button class="button button-icon" ng-click="goPage(fromEditPage)"> <i class="icon ion-ios-arrow-back">Back</i> </button> <h1 class="title">{{title}}</h1> <div class="buttons"> <button class="button button-icon" ng-click="editUser()"> <i class="icon ion-person"></i> </button> <button class="button button-icon" ng-click="sortDetail()"> </button> </div></ion-header-bar>'; 
+
+               if(item.type=='number'){
+                    //detail template for edit screen
+                    myService.apiResult.task.template.detail.html = '<ion-content padding="true"><div class="wbox" style="padding:30px;"><h1 style="text-align:center;">Home Page</h1><div style="height: 40px;" class="spacer"></div> <div class = "list"> <label class = "item item-input"> <input type = "number" ng-model="editValue.content.value" /> </label> </div> <button class="button button-stable button-block" id="login-button" ng-click="updateRecord(editValue)">Save</button></div></ion-content>';  
+               }else{
+                    //detail template for edit screen
+                    myService.apiResult.task.template.detail.html = '<ion-content padding="true"><div class="wbox" style="padding:30px;"><h1 style="text-align:center;">Home Page</h1><div style="height: 40px;" class="spacer"></div> <div class = "list"> <label class = "item item-input"> <input type = "text" placeholder = "Placeholder 1" ng-model="editValue.content.value" /> </label> </div> <button class="button button-stable button-block" id="login-button" ng-click="updateRecord(editValue)">Save</button></div></ion-content>';  
                }
-               if(item.edit_template){
-                    myService.apiResult.task.template.header.html = item.edit_template.header;
-               }
+
+               // if(item.edit_template){
+               //      myService.apiResult.task.template.detail.html = item.edit_template.details;  
+               //      myService.apiResult.task.template.header.html = item.edit_template.header; 
+               // }
+               
                $scope.setPage();
                utilityService.setLoading(false);
           }
 
-          //save used edited data into DB
+          //save user edited data into DB
           $scope.updateRecord = function(item){
                console.log("updating records",item);
                var api_endPoint = "update";
