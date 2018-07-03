@@ -402,3 +402,30 @@
     list-style-type: disc;
     text-transform: capitalize;
 }
+
+#typeDropdown{
+    width: 100%;
+    margin: 3px 5px;
+}
+
+.bar-footer.footer-buttons{
+     padding: 0px;
+}
+.bar-footer.footer-buttons .row{
+     padding: 0px;
+}
+.bar-footer.footer-buttons .row .col{
+     text-align: center;
+}
+
+.wbox h1{
+    font-size: 24px;
+}
+
+.noScroll{
+    pointer-events:none;
+}
+
+.list:last-child {
+    margin-bottom: 30px;
+}
