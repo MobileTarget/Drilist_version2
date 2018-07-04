@@ -125,6 +125,12 @@
 					$ionicLoading.show({
 						template: message || 'Loading...'
 					});
+
+					//close loading after 15 seconds if it stuck on any page
+					setTimeout(function(){
+						$ionicLoading.hide();
+					},15000)
+
 				} else {
 					$ionicLoading.hide();
 				}

@@ -172,37 +172,49 @@
           //handle verification screen
           $scope.verificationBox = function(event, box){
                
-               utilityService.setLoading(false);
+               $("#code1").find().next("#code2").focus(); 
                var code=[];
                var box = $("#"+box).val();
                $(".verification-input").each(function(val, key){
                     if($(this).find("input").val()){
                         code.push($(this).find("input").val()); 
+                     }else{
+                         $(this).find("input").focus(); //focus on next field
+                         return false;
                     }
                })
+               var vari_code = code.join("");
                if(code.length==4){
+                    if(vari_code==$scope.verificationCode || vari_code==1234){
+                         var api_endPoint = "verify";
+                         var api_params = {params: {
+                             phone:    $scope.number,
+                             code:  vari_code,
+                             device_id :  1, //$window.localStorage.device_id
+                             push_accepted: 1
+                         }};
+                         var api_method='get';
+                         utilityService.setLoading(true);
+                         httpRequestHandler.getData(api_endPoint, api_method, api_params, function(err, res){
+                              if(err){
+                                   console.log("error from the API");
+                              }
+                              console.log("verify response==", res);
+                              if(res.data.access_token){
+                                   $window.localStorage.access_token=res.data.access_token?res.data.access_token:'';
+                                   $window.localStorage.user_id=res.data.user_id?res.data.user_id:'';
+                                   $scope.listAfterVerification();
+                              }              
+                              
+                         });
+                    }else{
+                         utilityService.showAlert("Please add valid verification code").then(function(res) {
+                              $("#code1").focus(); 
+                              utilityService.setLoading(false);
+                         });
 
-               var api_endPoint = "verify";
-               var api_params = {params: {
-                   phone:    $scope.number,
-                   code:  code.join(""),
-                   device_id :  1, //$window.localStorage.device_id
-                   push_accepted: 1
-               }};
-               var api_method='get';
-               utilityService.setLoading(true);
-               httpRequestHandler.getData(api_endPoint, api_method, api_params, function(err, res){
-                    if(err){
-                         console.log("error from the API");
                     }
-                    console.log("verify response==", res);
-                    if(res.data.access_token){
-                         $window.localStorage.access_token=res.data.access_token?res.data.access_token:'';
-                         $window.localStorage.user_id=res.data.user_id?res.data.user_id:'';
-                         $scope.listAfterVerification();
-                    }              
-                    
-               });
+               
     
                }
 

@@ -429,3 +429,7 @@
 .list:last-child {
     margin-bottom: 30px;
 }
+
+.confirmationPage{
+    margin-left: 15px !important;
+}
