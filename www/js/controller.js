@@ -5,7 +5,7 @@
 
 	function applicationControllerFn($scope, $http, $timeout, $loading, myService, $sce, $compile, $window, utilityService, $localStorage, httpRequestHandler) {
 		$scope.page_id = 1;
-		$scope.title = "Drilist version 2";
+		$scope.title = "Drilist Version 2";
           $scope.user = {
                country_code: "1"   
           };
@@ -13,6 +13,9 @@
           $scope.record = false;
           $scope.sortingType = "default"; //for sorting the items
           $scope.showDeleted = true; //for sorting the items
+          $window.localStorage.from_pageId_delete= ''; //from page id when delete is active so user can go back even when  any page dont have record.
+          $scope.backbtnOnFront=false; // show back button on front page when adding new item
+          // var api_endPoint = "master_api_handler";
           
           $scope.config = {
                page_id: $window.localStorage.access_token ? 2 : 1,
@@ -44,8 +47,10 @@
                var api_method='get';
                var api_params = {params: {
                    user_id: $window.localStorage.user_id,
+                   access_token: $window.localStorage.access_token,
                    api_name: 'homepage'
                }};
+
                $scope.childData=[];
                httpRequestHandler.getData(api_endPoint, api_method, api_params, function(err, res){
                     if(err){
@@ -59,15 +64,44 @@
                          
                     }else{
                          $scope.listData = res.data.data; 
-                         $scope.listData.currentPageId = res.data.data.header.current_page_id;
-                         $scope.listData.new={recordType:''};
-                         $scope.sortingClass = $scope.sortingType=='default'?'ion-toggle':'ion-toggle-filled';
-                         myService.apiResult.task.template.header.html=$scope.listData.header.html;
-                         myService.apiResult.task.template.footer.html=$scope.listData.footer.html;
-                         myService.apiResult.task.template.detail.html=$scope.listData.details.html.html;
-                         $scope.setPage();
-                         utilityService.setLoading(false);
+                         // $scope.listData.currentPageId = res.data.data.header.current_page_id;
+                         // $scope.listData.new={recordType:''};
+                         // $scope.sortingClass = $scope.sortingType=='default'?'ion-toggle':'ion-toggle-filled';
+                         // myService.apiResult.task.template.header.html=$scope.listData.header.html;
+                         // myService.apiResult.task.template.footer.html=$scope.listData.footer.html;
+                         // myService.apiResult.task.template.detail.html=$scope.listData.details.html.html;
+                         // $scope.setPage();
+                         // utilityService.setLoading(false);
+
+
+                         // res.data.data.footer = $scope.listData.footer;
+                         if(res.data.success==false){
+                              
+                              utilityService.setLoading(false);
+                              $scope.listData=res.data.data; 
+                              $scope.listData.currentPageId = pageId;
+                              myService.apiResult.task.template.header.html=$scope.listData.header.html;
+                              console.log("No Data Founs",$scope.listData,res);
+                              myService.apiResult.task.template.detail.html=$scope.listData.details.html.html;
+                         }else{
+                              // $scope.listData=res.data.data; 
+                              // $scope.listData.currentPageId = pageId;
+                              // myService.apiResult.task.template.header.html=$scope.listData.header.html;
+                              // myService.apiResult.task.template.detail.html=$scope.listData.details.html.html;
+
+                              $scope.listData.currentPageId = res.data.data.header.current_page_id;
+                              $scope.listData.new={recordType:''};
+                              $scope.sortingClass = $scope.sortingType=='default'?'ion-toggle':'ion-toggle-filled';
+                              myService.apiResult.task.template.header.html=$scope.listData.header.html;
+                              myService.apiResult.task.template.footer.html=$scope.listData.footer.html;
+                              myService.apiResult.task.template.detail.html=$scope.listData.details.html.html;
+
+                         }
+
                     }
+                    $scope.setPage();
+                    utilityService.setLoading(false);
+
 
                });
                  
@@ -77,6 +111,7 @@
                var api_method='get';
                var api_params={};
                httpRequestHandler.getData(api_endPoint, api_method, api_params, function(err, res){
+                    console.log("login screens", res);
                      res.data.forEach(function(val, key){
                          if(val.details.type=='login'){
                               $scope.head=res.data[key].meta_data.header;
@@ -226,6 +261,7 @@
                var api_method='get';
                var api_params = {params: {
                    user_id: $window.localStorage.user_id,
+                   access_token: $window.localStorage.access_token,
                    api_name: 'homepage'
                }};
                httpRequestHandler.getData(api_endPoint, api_method, api_params, function(err, res){
@@ -265,6 +301,7 @@
                     from_page_name: $scope.listData.header.from_page_name,
                     show_deleted: $scope.showDeleted,
                     current_page_id: $scope.listData.currentPageId,
+                    access_token: $window.localStorage.access_token,
                     api_name: 'showdeletedRecords'
                }}
                var api_method='get';
@@ -282,6 +319,12 @@
 
                     console.log("response from delete API", res);
                     $scope.showDeleted = $scope.showDeleted===true?false:true;
+                    if($scope.showDeleted===false){
+                         $window.localStorage.from_pageId_delete = $scope.listData.header.from_page_id;
+                    }else{
+                         $window.localStorage.from_pageId_delete = '';
+
+                    }
 
                     if(res.data.success==false){
                          utilityService.showAlert("No child data available for this","Message");
@@ -327,6 +370,8 @@
                     }
                });
           }
+
+
           //switch between user and default sort order
           $scope.sorting = () => {
                var api_endPoint = "master_api_handler";
@@ -335,6 +380,7 @@
                    sorting: $scope.sortingType,
                    pageId: $scope.listData.currentPageId,
                    from_page_name: $scope.listData.header.from_page_name,
+                   access_token: $window.localStorage.access_token,
                    api_name: "sorting"
                }};
                var api_method='get';
@@ -450,7 +496,12 @@
 
           //run on clikcing of + icon from footer, it display the template with pulldown with different types such as text, number, list, boolean etc
           $scope.addRecordModel = function(){
-               console.log("add record");
+               $scope.listData.new = {recordType:'text'};
+              if($scope.listData.currentPageId=='page1'){
+                    $scope.backbtnOnFront=true;
+               }else{
+                    $scope.backbtnOnFront=false;
+               }
                myService.apiResult.task.template.detail.html=$scope.listData.footer.add_record_page_template;
                $scope.setPage();
                utilityService.setLoading(false);
@@ -491,7 +542,7 @@
 
 
                $scope.listData.new.seq = $scope.listData.details.content.length?$scope.listData.details.content[$scope.listData.details.content.length-1].seq+1000:1000;
-               var api_endPoint = "update";
+               var api_endPointUpdate = "update";
                var api_params = {params: {
                    record:    $scope.listData.new,
                    user_id: $window.localStorage.user_id,
@@ -506,7 +557,7 @@
                utilityService.setLoading(true);
 
                //creating new record
-               httpRequestHandler.getData(api_endPoint, api_method, api_params, function(err, res){
+               httpRequestHandler.getData(api_endPointUpdate, api_method, api_params, function(err, res){
 
                     if(err){
                          console.log("error from the API");
@@ -518,6 +569,7 @@
                          var api_method='get';
                          var api_params = {params: {
                              user_id: $window.localStorage.user_id,
+                             access_token: $window.localStorage.access_token,
                              api_name: "homepage"
                          }};
                          $scope.childData=[];
@@ -529,6 +581,7 @@
                              // from_page_name: from_page_name,
                              user_id: $window.localStorage.user_id,
                              current_page_id: $scope.listData.currentPageId,
+                             access_token: $window.localStorage.access_token,
                              api_name: "getchild"
                          }};   
                          var api_method='get';
@@ -573,11 +626,12 @@
                    from_page_name: from_page_name,
                    user_id: $window.localStorage.user_id,
                    current_page_id: pageId,
+                   access_token: $window.localStorage.access_token,
                    api_name: 'getchild'
                }};
 
                var api_method='get';
-
+               console.log("hitting child api", api_params);
                httpRequestHandler.getData(api_endPoint, api_method, api_params, function(err, res){
                     if(err){
                          console.log("error from the API");
@@ -591,12 +645,13 @@
                          $scope.listData=res.data.data; 
                          $scope.listData.currentPageId = pageId;
                          myService.apiResult.task.template.header.html=$scope.listData.header.html;
-                         console.log("No Data Founs",$scope.listData);
+                         console.log("No Data Founs",$scope.listData,res);
                          myService.apiResult.task.template.detail.html=$scope.listData.details.html.html;
                     }else{
                          $scope.listData=res.data.data; 
                          $scope.listData.currentPageId = pageId;
-                         myService.apiResult.task.template.header.html=$scope.listData.header.html;
+                         // myService.apiResult.task.template.header.html=$scope.listData.header.html;
+                         myService.apiResult.task.template.header.html='<ion-header-bar class="bar-stable"> --{{listData.header.from_page_id}}<button class="button button-icon" ng-click="goPage(listData.header.from_page_id)"> <i class="icon ion-ios-arrow-back">Back</i> </button> <h1 class="title">{{title}}</h1> <div class="buttons"> <button class="button button-icon" ng-click="editUser()"> <i class="icon ion-person"></i> </button> <button class="button button-icon" ng-click="sortDetail()"> </button> </div></ion-header-bar>';
                          myService.apiResult.task.template.detail.html=$scope.listData.details.html.html;
 
                     }
@@ -636,6 +691,33 @@
                     
                });
 
+          }
+
+          $scope.deletePermanent = (id) => {
+               utilityService.showConfirm("Undo Deleted","Are you sure you want to permanently delete this item?","Cancel","Ok").then(function(res) {
+                    if(res){
+                         var api_endPoint = "deletePermanent";
+                         var api_params = {params: {
+                             record_id:    id,
+                         }};
+                         var api_method='get';
+
+                         utilityService.setLoading(true);
+                         httpRequestHandler.getData(api_endPoint, api_method, api_params, function(err, res){
+                              if(err){
+                                   console.log("error from the API");
+                              }
+                              console.log("delete permanent response==", res);
+                              // console.log("index==",$scope.listData.details.content.findIndex(item=>item.id==res.data[0].id));
+                              $scope.listData.details.content.splice($scope.listData.details.content.findIndex(item=> item.id == res.data[0].id),1)
+                              myService.apiResult.task.template.detail.html = $scope.listData.details.html.html;   
+                              myService.apiResult.task.template.header.html = $scope.listData.header.html;
+                              $scope.setPage();
+                              utilityService.setLoading(false);
+                              
+                         });
+                    }
+               })    
           }
 
           //render template to edit record
@@ -686,12 +768,23 @@
           //using to go to previous page
           $scope.goPage = function(page_id) {
                utilityService.setLoading(true);
+               
+               if($scope.showDeleted==true && $window.localStorage.from_pageId_delete && $window.localStorage.from_pageId_delete != 'undefined'){
+                    // from_page_id = $scope.listData.header.current_page_id;
+                    page_id = $window.localStorage.from_pageId_delete;
+                    $window.localStorage.from_pageId_delete = '';
 
-               console.log("gopage pageid",page_id);
+                    console.log("page_id - from_pageId_delete",page_id, $window.localStorage.from_pageId_delete);
+               }
+
                $scope.record = false;
-               $scope.showDeleted = true; //this variable is used to show deleted records.
+               $scope.backbtnOnFront=false;
 
-               if(page_id==="noApiHit"){
+               if(page_id==="backToLogin"){
+                    myService.apiResult.task.template.detail.html=$window.localStorage.loginDetails;
+                    $scope.setPage();
+                    utilityService.setLoading(false);
+               }else if(page_id==="noApiHit"){
                     myService.apiResult.task.template.header.html=$scope.listData.header.html;
                     myService.apiResult.task.template.detail.html=$scope.listData.details.html.html;
                     $scope.setPage();
@@ -701,18 +794,25 @@
                
                     var api_endPoint = "master_api_handler";
                     var api_params = {params: {
-                        back_page_id:    page_id,
+                        // back_page_id:    page_id,
+                        current_page_id: page_id,
                         user_id: $window.localStorage.user_id,
-                        api_name: "back"
+                        api_name: "back",
+                        // from_page_id: $scope.listData.header.current_page_id,
+                        from_page_id: page_id,
+                        from_page_name: $scope.listData.header.from_page_name,
+                        access_token: $window.localStorage.access_token,
+
                     }};
 
                     var api_method='get';
+                    console.log("going back", api_params)
 
                     httpRequestHandler.getData(api_endPoint, api_method, api_params, function(err, res){
                          if(err){
                               console.log("error from the API");
                          }
-
+                         $scope.showDeleted=true; //this variable is used to show deleted records.
                          $scope.listData=res.data; 
                          $scope.listData.currentPageId=page_id;
                          console.log("go page response==", $scope.listData, res);
