@@ -650,8 +650,7 @@
                     }else{
                          $scope.listData=res.data.data; 
                          $scope.listData.currentPageId = pageId;
-                         // myService.apiResult.task.template.header.html=$scope.listData.header.html;
-                         myService.apiResult.task.template.header.html='<ion-header-bar class="bar-stable"> --{{listData.header.from_page_id}}<button class="button button-icon" ng-click="goPage(listData.header.from_page_id)"> <i class="icon ion-ios-arrow-back">Back</i> </button> <h1 class="title">{{title}}</h1> <div class="buttons"> <button class="button button-icon" ng-click="editUser()"> <i class="icon ion-person"></i> </button> <button class="button button-icon" ng-click="sortDetail()"> </button> </div></ion-header-bar>';
+                         myService.apiResult.task.template.header.html=$scope.listData.header.html;
                          myService.apiResult.task.template.detail.html=$scope.listData.details.html.html;
 
                     }
@@ -768,13 +767,10 @@
           //using to go to previous page
           $scope.goPage = function(page_id) {
                utilityService.setLoading(true);
-               
                if($scope.showDeleted==true && $window.localStorage.from_pageId_delete && $window.localStorage.from_pageId_delete != 'undefined'){
                     // from_page_id = $scope.listData.header.current_page_id;
                     page_id = $window.localStorage.from_pageId_delete;
                     $window.localStorage.from_pageId_delete = '';
-
-                    console.log("page_id - from_pageId_delete",page_id, $window.localStorage.from_pageId_delete);
                }
 
                $scope.record = false;

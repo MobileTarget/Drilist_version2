@@ -450,3 +450,7 @@
     font-size: 27px;
     margin-right: 2px;
 }
+
+.bar-header .title{
+    text-align: center !important;
+}
