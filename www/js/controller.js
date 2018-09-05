@@ -1,9 +1,9 @@
 	app
 		.controller('applicationController', applicationControllerFn);
 
-	applicationControllerFn.$inject = ['$scope', '$http', '$timeout', '$loading', 'myService', '$sce', '$compile', '$window', 'utilityService', '$localStorage','httpRequestHandler'];
+	applicationControllerFn.$inject = ['$scope', '$http', '$timeout', '$loading', 'myService', '$sce', '$compile', '$window', 'utilityService', '$localStorage','httpRequestHandler','httpRequestHandlerOthers'];
 
-	function applicationControllerFn($scope, $http, $timeout, $loading, myService, $sce, $compile, $window, utilityService, $localStorage, httpRequestHandler) {
+	function applicationControllerFn($scope, $http, $timeout, $loading, myService, $sce, $compile, $window, utilityService, $localStorage, httpRequestHandler,httpRequestHandlerOthers) {
 		$scope.page_id = 1;
 		$scope.title = "Drilist Version 2";
           $scope.user = {
@@ -37,9 +37,11 @@
                     }
                }
           };
+
+          
           console.log("$window.localStorage", $window.localStorage)
           utilityService.setLoading(true);
-
+                                                                                                     
           //Get either login screen or home screen if logged in
           if($window.localStorage.access_token){
                var api_endPoint='master_api_handler';
@@ -93,8 +95,10 @@
                               $scope.listData.new={recordType:''};
                               $scope.sortingClass = $scope.sortingType=='default'?'ion-toggle':'ion-toggle-filled';
                               myService.apiResult.task.template.header.html=$scope.listData.header.html;
-                              myService.apiResult.task.template.footer.html=$scope.listData.footer.html;
+                              // myService.apiResult.task.template.footer.html=$scope.listData.footer.html;
+                              myService.apiResult.task.template.footer.html='<div class="bar bar-footer bar-light footer-buttons"> <div class="row"> <div class="col"> <button class="button button-icon" ng-click="addRecordModel()"> <i class="icon ion-android-add-circle"></i> </button> </div> <div class="col"><button class="button button-icon ion-navicon" ng-click="record=record?false:true"></button></div> <div class="col"><button class="button button-icon" ng-click="sorting()"><i class="icon ion-toggle" ng-class="sortingClass"></i></button> </div> <div class="col">     <button class = "button" ng-click = "showPopup()"><i class="icon ion-android-more-vertical"></i></button>  </div></div></div>';
                               myService.apiResult.task.template.detail.html=$scope.listData.details.html.html;
+                              $scope.pushEnable = $scope.pushEnable=='ion-toggle-filled'?'ion-toggle':'ion-toggle-filled';
 
                          }
 
@@ -135,6 +139,100 @@
           }
 
 
+          // When button is clicked, the popup will be shown...
+             $scope.showPopup = function() {
+               $scope.data = {}
+               utilityService.showCustomPopup($scope).then(function(res) {
+                    // $timeout(function() { $("#phone").focus(); }, 100);
+                     console.log('Tapped!', res);
+               });
+                
+                // myPopup.then(function(res) {
+                //    console.log('Tapped!', res);
+                // });    
+             };
+
+
+             $scope.pushPermission = function(){
+               alert("push pushPermission12");
+               
+               
+
+               // var api_endPoint='master_api_handler';
+               // var api_name='homepage';
+               var api_method='post';
+               var api_params = {};
+               var api_header = {headers: {'Authorization': 'key=AAAAOVlgDOw:APA91bHteOoMlAtZAhWB8s0_hVzs0RgttZxJIoiXgx9LiYchI0XVNDvSlT6X7dalRH50fT7Xr57BISs3OkQmk41qRFBUJuiCsvNuWmjJSSFZ0HJHBe8U6sNUQPaP7hxqnA3C3dKhwlY5S15PSW-KxFZuV2TT87Bkrw'}
+               };
+               // var url = 'https://iid.googleapis.com/iid/info/cSdpV9YW_ww:APA91bESshKTsMJXlQOXnd0Bow2J2B7KvLGJPOljOZ7JEwYVKP5h8KDR_tXVwGGXK72thxObkq_N9wtp2Uuy_jwGsFIO9sN3_bqfXZibIlMcXcLK1dqj3wYLuzj1jglDqY0FbCpCg-1Z?details=true';
+               $scope.childData=[];
+               var IID_TOKEN = window.localStorage.device_id;
+               var tipicName = $scope.listData.header.current_page_id;
+               var url = "https://iid.googleapis.com/iid/v1/"+IID_TOKEN+"/rel/topics/"+tipicName;
+               // var url = "https://iid.googleapis.com/iid/info/"+IID_TOKEN+"?details=true";
+               // var url = "https://iid.googleapis.com/iid/v1/cp7zkTAqUGQ:APA91bGN-wLJwE790imM-FRvzpiqxLXHkicyaqeXryo12l4ZMSvwoCWVDalSleM0l4nfrDtw2QSQ3VvvAqd42GLeLR_j4NUSenkYRFbzJX6TPzqtoD7llOKP_mH0vUjSYck26wqPnOiQ/rel/topics/page1";
+               console.log("URL from push", url);
+               httpRequestHandlerOthers.getData(url, api_method, api_params, api_header, function(err, res){
+                    if(err){
+                         console.log("error from the API");
+
+                    }
+                    console.log("data from FCM",res.data.rel)
+                    // $scope.updateRecord()
+
+                    // console.log("updating records",item);
+                    var api_endPoint = "update";
+                    var api_params = {params: {
+                        record:    tipicName,
+                        // record:    {id: $window.localStorage.user_id},
+                        user_id: $window.localStorage.user_id,
+                        updateTable: 'user',
+                        device_id: IID_TOKEN,
+                        action: 'update'
+                    }};
+                    var api_method='post';
+
+                    // console.log("editing data", item);
+                    utilityService.setLoading(true);
+                    httpRequestHandler.getData(api_endPoint, api_method, api_params, function(err, res){
+                         if(err){
+                              console.log("error from the API");
+                         }
+
+                         $scope.pushEnable = $scope.pushEnable=='ion-toggle-filled'?'ion-toggle':'ion-toggle-filled';
+                         // console.log("affter Update", res, res.data[0].id); 
+                         // var indx = $scope.listData.details.content.findIndex(list=> list.id == item.id);
+                         // $scope.listData.details.content[indx].id = res.data[0].id;
+                         // console.log("affter Update2", $scope.listData); 
+                         // myService.apiResult.task.template.detail.html = $scope.listData.details.html.html;
+                         // myService.apiResult.task.template.header.html=$scope.listData.header.html;
+                         // $scope.setPage();
+
+                         utilityService.setLoading(false);
+                         
+                    });
+               });
+
+               // $http.post(url, {}, {headers: {'Authorization': 'key=AAAAOVlgDOw:APA91bHteOoMlAtZAhWB8s0_hVzs0RgttZxJIoiXgx9LiYchI0XVNDvSlT6X7dalRH50fT7Xr57BISs3OkQmk41qRFBUJuiCsvNuWmjJSSFZ0HJHBe8U6sNUQPaP7hxqnA3C3dKhwlY5S15PSW-KxFZuV2TT87Bkrw'}
+               // }).then(function(res){
+               //      console.log("data from FCM",res)
+               // })
+
+               // $http.get(url,{headers: {'Authorization': 'key=AAAAOVlgDOw:APA91bHteOoMlAtZAhWB8s0_hVzs0RgttZxJIoiXgx9LiYchI0XVNDvSlT6X7dalRH50fT7Xr57BISs3OkQmk41qRFBUJuiCsvNuWmjJSSFZ0HJHBe8U6sNUQPaP7hxqnA3C3dKhwlY5S15PSW-KxFZuV2TT87Bkrw'}
+               // }).then(function(res){
+               //      console.log("data from FCM",res)
+               // })
+
+               // $http.get(url, {
+               //     headers: {'Authorization': 'key=AAAAOVlgDOw:APA91bHteOoMlAtZAhWB8s0_hVzs0RgttZxJIoiXgx9LiYchI0XVNDvSlT6X7dalRH50fT7Xr57BISs3OkQmk41qRFBUJuiCsvNuWmjJSSFZ0HJHBe8U6sNUQPaP7hxqnA3C3dKhwlY5S15PSW-KxFZuV2TT87Bkrw'}
+               // }).then(function(res){
+               //      console.log("data from FCM",res)
+               //       // callback(null, res);
+                      
+               //  })
+               // $scope.sortingClass = $scope.sortingType=='default'?'ion-toggle':'ion-toggle-filled';
+                // $scope.sortingType = $scope.sortingType==='default'?'user':'default';
+             }
           //render HTML 
           $scope.setPage = function () {
                $scope.header_html = myService.getTemplateHtml("header");
@@ -752,10 +850,10 @@
                     if(err){
                          console.log("error from the API");
                     }
-                    console.log("after Update", res, res.data[0].id); 
+                    console.log("affter Update", res, res.data[0].id); 
                     var indx = $scope.listData.details.content.findIndex(list=> list.id == item.id);
                     $scope.listData.details.content[indx].id = res.data[0].id;
-                    console.log("after Update2", $scope.listData); 
+                    console.log("affter Update2", $scope.listData); 
                     myService.apiResult.task.template.detail.html = $scope.listData.details.html.html;
                     myService.apiResult.task.template.header.html=$scope.listData.header.html;
                     $scope.setPage();

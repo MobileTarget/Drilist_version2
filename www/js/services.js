@@ -61,6 +61,27 @@
 			}
 		 	
 			}
+		}).service('httpRequestHandlerOthers',function($http){
+			this.getData = function(url, method, params , api_header, callback){
+				// var url="https://dev-platform2.mybluemix.net/api/"+endPoint;
+
+			// console.log("INSERIVE==",parm); return'this';
+
+			if(method==='get'){
+				$http.get(url, api_header).then(function(res){
+
+	                callback(null, res);
+	                 
+	           })
+			}else{
+				$http.post(url, params, api_header).then(function(res) {
+
+	                callback(null, res);
+	                 
+	           })
+			}
+		 	
+			}
 		}).service('utilityService', function($ionicLoading, $ionicPopup, $loading) {
 			var self = this;
 			var appName = "Dri Lists";
@@ -97,6 +118,35 @@
 				});
 				return confirmPopup;
 			};
+
+			self.showCustomPopup = function(scope){
+				// Custom popup
+				console.log("scope in service", scope)
+	            var myPopup = $ionicPopup.show({
+	               template: '<input type = "text" ng-model = "data.model"> <p><button class="button button-icon" ng-click="showdeletedRecords()"><span>Show Deleted: </span> <i class="icon ion-backspace-outline"></i></button></p>  <p><button class="button button-icon" ng-click="pushPermission()"><span>Push Notification: </span> <i class="icon ion-toggle" ng-class="pushEnable"></i></button></p>',
+	               title: 'Settings',
+	               subTitle: 'Enable/Disable',
+	               scope: scope,
+	                     
+	               buttons: [
+	                  { text: 'Close' }, 
+	                  // {
+	                  //    text: '<b>Save</b>',
+	                  //    type: 'button-positive',
+	                  //    onTap: function(e) {
+	                                    
+	                  //       if (!scope.data.model) {
+	                  //          //don't allow the user to close unless he enters model...
+	                  //          e.preventDefault();
+	                  //       } else {
+	                  //          return scope.data.model;
+	                  //       }
+	                  //    }
+	                  // }
+	               ]
+	            });
+	            return myPopup;
+            }
 			self.busyState = false;
 			self.setBusy = function(state, message, key) {
 				if (state === this.busyState) {
