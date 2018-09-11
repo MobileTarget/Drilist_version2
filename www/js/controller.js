@@ -400,6 +400,7 @@
                     show_deleted: $scope.showDeleted,
                     current_page_id: $scope.listData.currentPageId,
                     access_token: $window.localStorage.access_token,
+                    currentPagedb_id: $scope.listData.header.currentPagedb_id,
                     api_name: 'showdeletedRecords'
                }}
                var api_method='get';
@@ -479,6 +480,8 @@
                    pageId: $scope.listData.currentPageId,
                    from_page_name: $scope.listData.header.from_page_name,
                    access_token: $window.localStorage.access_token,
+                   // fromPagedb_id: $scope.listData.header.currentPagedb_id,
+                   currentPagedb_id: $scope.listData.header.currentPagedb_id,
                    api_name: "sorting"
                }};
                var api_method='get';
@@ -712,18 +715,23 @@
           }
 
           //show list child
-          $scope.showChild = function(pageId, from_page_id, from_page_name){
+          $scope.showChild = function(x, from_page_id, from_page_name){
+
+               
+               var pageId = x.to_page_id;
                utilityService.setLoading(true);
-               console.log("CHILDPAGES",pageId, from_page_id, from_page_name);
+               console.log("CHILDPAGES",x, from_page_id, from_page_name);
 
                
                var api_endPoint = "master_api_handler";
                var api_params = {params: {
                    to_page_id:    pageId,
                    from_page_id: $scope.listData.header.current_page_id,
+                   fromPagedb_id: $scope.listData.header.currentPagedb_id,
                    from_page_name: from_page_name,
                    user_id: $window.localStorage.user_id,
                    current_page_id: pageId,
+                   currentPagedb_id: x.id,
                    access_token: $window.localStorage.access_token,
                    api_name: 'getchild'
                }};
@@ -735,7 +743,7 @@
                          console.log("error from the API");
                     }
                     
-                    console.log("child response==", $scope.listData, res);
+                    console.log("child response==", res);
                     res.data.data.footer = $scope.listData.footer;
                     if(res.data.success==false){
                          
@@ -893,6 +901,8 @@
                         user_id: $window.localStorage.user_id,
                         api_name: "back",
                         // from_page_id: $scope.listData.header.current_page_id,
+                        // currentPagedb_id: x.id,
+                        fromPagedb_id: $scope.listData.header.fromPagedb_id,
                         from_page_id: page_id,
                         from_page_name: $scope.listData.header.from_page_name,
                         access_token: $window.localStorage.access_token,
@@ -909,7 +919,7 @@
                          $scope.showDeleted=true; //this variable is used to show deleted records.
                          $scope.listData=res.data; 
                          $scope.listData.currentPageId=page_id;
-                         console.log("go page response==", $scope.listData, res);
+                         console.log("go page response==", res);
                          
                     myService.apiResult.task.template.header.html=$scope.listData.header.html;
                     myService.apiResult.task.template.detail.html=$scope.listData.details.html.html;
